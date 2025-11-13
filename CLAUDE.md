@@ -6,27 +6,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Development Server
 ```bash
-npm run dev
+pnpm dev
 ```
 Starts the Next.js development server on http://localhost:3000 with hot reload enabled.
 
 ### Building
 ```bash
-npm run build
+pnpm build
 ```
 Creates an optimized production build. Always run this before deployment to catch TypeScript and build errors.
+Note: The build script automatically runs `prisma generate` before building.
 
 ### Production Server
 ```bash
-npm start
+pnpm start
 ```
-Runs the production server (requires `npm run build` first).
+Runs the production server (requires `pnpm build` first).
 
 ### Linting
 ```bash
-npm run lint
+pnpm lint
 ```
 Runs ESLint with Next.js configuration. This project uses ESLint v9 with Next.js Web Vitals and TypeScript rules.
+
+### Prisma
+```bash
+pnpm prisma:generate  # Manually generate Prisma Client (auto-runs on postinstall)
+pnpm prisma:studio    # Open Prisma Studio
+pnpm prisma:push      # Push schema changes to database
+pnpm db:test          # Test database connection
+```
+The project uses Prisma for database management. Prisma Client is automatically generated:
+- After `pnpm install` (via postinstall hook)
+- Before `pnpm build` (via build script)
 
 ## Architecture Overview
 
@@ -119,8 +131,9 @@ Components must be manually created in `components/ui/`:
 ## Project Requirements
 
 - **Node.js**: 20.x or higher
-- **npm**: 10.x or higher
-- Package manager: Uses npm (package-lock.json present, ignore pnpm-lock.yaml)
+- **pnpm**: 8.x or higher
+- Package manager: Uses pnpm (pnpm-lock.yaml)
+- **Prisma**: 6.19.0 (PostgreSQL/SQL Server support)
 
 ## Build Output
 - Development build: `.next/` directory (gitignored)
