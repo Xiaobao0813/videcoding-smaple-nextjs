@@ -3,7 +3,7 @@
 import React, { createContext, ReactNode, useContext, useState } from "react";
 
 export interface CartItem {
-  id: string;
+  id: string; // 這是產品 ID (productId)
   name: string;
   description: string;
   price: number;
@@ -27,7 +27,10 @@ interface CartContextType {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  saveOrder: (orderNumber: string) => void;
+  saveOrder: (
+    orderNumber: string,
+    paymentMethod: "CREDIT_CARD" | "MASTERCARD" | "VISA" | "APPLE_PAY",
+  ) => Promise<{ success: boolean; orderId?: string; error?: string }>;
   reorder: (orderId: string) => void;
   totalItems: number;
   totalPrice: number;
@@ -36,48 +39,8 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([
-    {
-      id: "1",
-      name: "Soy Milk",
-      description: "Freshly made soy milk, served hot or cold.",
-      price: 2.0,
-      calories: 250,
-      image:
-        "https://images.unsplash.com/photo-1556910110-a5a63dfd393c?w=400&h=400&fit=crop",
-      quantity: 2,
-    },
-    {
-      id: "2",
-      name: "Egg Crepe",
-      description: "Egg crepe with a variety of fillings.",
-      price: 3.5,
-      calories: 350,
-      image:
-        "https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=400&h=400&fit=crop",
-      quantity: 1,
-    },
-    {
-      id: "3",
-      name: "Radish Cake",
-      description: "Pan-fried radish cake, crispy outside.",
-      price: 3.0,
-      calories: 320,
-      image:
-        "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&h=400&fit=crop",
-      quantity: 1,
-    },
-    {
-      id: "4",
-      name: "Fried Dough Stick",
-      description: "Traditional Chinese fried dough.",
-      price: 2.0,
-      calories: 280,
-      image:
-        "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=400&fit=crop",
-      quantity: 1,
-    },
-  ]);
+  // 預設購物車是空的
+  const [items, setItems] = useState<CartItem[]>([]);
 
   const [orders, setOrders] = useState<Order[]>([]);
 
@@ -98,29 +61,85 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    setItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
-      ),
-    );
+    if (quantity <= 0) {
+      // 如果數量為 0 或負數，從購物車移除該商品
+      setItems((currentItems) => currentItems.filter((item) => item.id !== id));
+    } else {
+      setItems((currentItems) => {
+        const existingItem = currentItems.find((item) => item.id === id);
+        if (existingItem) {
+          // 更新現有商品的數量
+          return currentItems.map((item) =>
+            item.id === id ? { ...item, quantity } : item,
+          );
+        }
+        // 如果商品不存在，不做任何事（需要使用 addItem）
+        return currentItems;
+      });
+    }
   };
 
   const clearCart = () => {
-    // Reset all quantities to 0 instead of removing items
-    setItems((currentItems) =>
-      currentItems.map((item) => ({ ...item, quantity: 0 })),
-    );
+    // 清空購物車
+    setItems([]);
   };
 
-  const saveOrder = (orderNumber: string) => {
-    const newOrder: Order = {
-      id: Date.now().toString(),
-      orderNumber,
-      items: [...items],
-      totalPrice,
-      createdAt: new Date(),
-    };
-    setOrders((prevOrders) => [newOrder, ...prevOrders]);
+  const saveOrder = async (
+    orderNumber: string,
+    paymentMethod: "CREDIT_CARD" | "MASTERCARD" | "VISA" | "APPLE_PAY",
+  ): Promise<{ success: boolean; orderId?: string; error?: string }> => {
+    try {
+      // 準備訂單資料
+      const orderItems = items
+        .filter((item) => item.quantity > 0)
+        .map((item) => ({
+          productId: item.id,
+          productName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        }));
+
+      if (orderItems.length === 0) {
+        return { success: false, error: "購物車是空的" };
+      }
+
+      // 呼叫 API 建立訂單
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: orderItems,
+          paymentMethod,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.error || "建立訂單失敗" };
+      }
+
+      // 儲存訂單到本地狀態（用於訂單歷史）
+      const orderId = crypto.randomUUID();
+      const newOrder: Order = {
+        id: orderId,
+        orderNumber,
+        items: [...items],
+        totalPrice,
+        createdAt: new Date(),
+      };
+      setOrders((prevOrders) => [newOrder, ...prevOrders]);
+
+      return { success: true, orderId: data.order.id };
+    } catch (error) {
+      console.error("儲存訂單失敗:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "未知錯誤",
+      };
+    }
   };
 
   const reorder = (orderId: string) => {

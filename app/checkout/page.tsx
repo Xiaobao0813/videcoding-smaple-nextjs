@@ -15,16 +15,52 @@ export default function CheckoutPage() {
     "mastercard",
   );
   const [sameAsBilling, setSameAsBilling] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleContinue = () => {
-    // Generate a random order number
-    const orderNumber = `#${Math.floor(10000 + Math.random() * 90000)}`;
-    // Save order to history before clearing cart
-    saveOrder(orderNumber);
-    // Clear the cart
-    clearCart();
-    // Navigate to thank you page with order number
-    router.push(`/thank-you?order=${orderNumber}`);
+  const handleContinue = async () => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+
+    try {
+      // 生成訂單編號
+      const orderNumber = `#${Math.floor(10000 + Math.random() * 90000)}`;
+
+      // 根據選擇的付款方式決定 paymentMethod 值
+      let paymentMethodType:
+        | "CREDIT_CARD"
+        | "MASTERCARD"
+        | "VISA"
+        | "APPLE_PAY";
+
+      if (paymentMethod === "apple") {
+        paymentMethodType = "APPLE_PAY";
+      } else {
+        // 根據選擇的信用卡類型
+        paymentMethodType =
+          selectedCard === "mastercard" ? "MASTERCARD" : "VISA";
+      }
+
+      // 儲存訂單到資料庫
+      const result = await saveOrder(orderNumber, paymentMethodType);
+
+      if (!result.success) {
+        console.error("建立訂單失敗:", result.error);
+        alert(`建立訂單失敗: ${result.error}`);
+        setIsProcessing(false);
+        return;
+      }
+
+      // 清空購物車
+      clearCart();
+
+      // 導航到感謝頁面
+      router.push(`/thank-you?order=${orderNumber}`);
+    } catch (error) {
+      console.error("處理訂單時發生錯誤:", error);
+      alert("處理訂單時發生錯誤，請稍後再試");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -184,9 +220,10 @@ export default function CheckoutPage() {
       <footer className="border-t border-gray-200 bg-[#fefefe] backdrop-blur-sm px-4 py-8 max-w-md mx-auto w-full">
         <button
           onClick={handleContinue}
-          className="w-full bg-[#ed9c2a] text-white font-bold text-base py-3 px-6 rounded-full hover:bg-[#d88a24] transition-colors"
+          disabled={isProcessing}
+          className="w-full bg-[#ed9c2a] text-white font-bold text-base py-3 px-6 rounded-full hover:bg-[#d88a24] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Continue
+          {isProcessing ? "處理中..." : "Continue"}
         </button>
       </footer>
     </div>

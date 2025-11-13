@@ -22,6 +22,7 @@ export default function HomeClient({ products }: HomeClientProps) {
   const router = useRouter();
   const {
     items: cartItems,
+    addItem,
     updateQuantity,
     totalItems,
     totalPrice,
@@ -32,6 +33,27 @@ export default function HomeClient({ products }: HomeClientProps) {
   const getItemQuantity = (productId: string) => {
     const cartItem = cartItems.find((item) => item.id === productId);
     return cartItem?.quantity || 0;
+  };
+
+  // Handle quantity change
+  const handleQuantityChange = (product: Product, newQuantity: number) => {
+    const currentQuantity = getItemQuantity(product.id);
+
+    if (currentQuantity === 0 && newQuantity > 0) {
+      // 商品不在購物車中，需要添加
+      addItem({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        calories: 0, // 如果產品資料中沒有 calories，可以設為 0 或從資料庫讀取
+        image: product.image,
+        quantity: newQuantity,
+      });
+    } else {
+      // 商品已在購物車中，更新數量
+      updateQuantity(product.id, newQuantity);
+    }
   };
 
   return (
@@ -140,8 +162,8 @@ export default function HomeClient({ products }: HomeClientProps) {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() =>
-                              updateQuantity(
-                                product.id,
+                              handleQuantityChange(
+                                product,
                                 Math.max(0, quantity - 1),
                               )
                             }
@@ -154,7 +176,7 @@ export default function HomeClient({ products }: HomeClientProps) {
                           </span>
                           <button
                             onClick={() =>
-                              updateQuantity(product.id, quantity + 1)
+                              handleQuantityChange(product, quantity + 1)
                             }
                             className="w-8 h-8 rounded-full bg-[#f8f3ec] flex items-center justify-center text-[#333333] font-medium hover:bg-[#efe5d5] transition-colors"
                           >

@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 
 const imgCuteBaoIllustration = "/thankyou.png";
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,5 +78,27 @@ export default function ThankYouPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function ThankYouLoading() {
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+      <div className="max-w-md w-full flex flex-col items-center gap-5 py-8">
+        <div className="relative w-48 h-48 bg-gray-100 rounded-full animate-pulse" />
+        <div className="h-9 w-48 bg-gray-100 rounded animate-pulse" />
+        <div className="h-7 w-64 bg-gray-100 rounded animate-pulse" />
+        <div className="w-full bg-gray-100 rounded-2xl h-32 animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<ThankYouLoading />}>
+      <ThankYouContent />
+    </Suspense>
   );
 }
