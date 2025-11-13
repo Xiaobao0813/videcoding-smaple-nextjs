@@ -24,7 +24,10 @@ export default function Home() {
             Taiwanese Breakfast
           </h1>
           <div className="flex items-center gap-4">
-            <button className="p-0.5 hover:opacity-70 transition-opacity">
+            <button
+              onClick={() => router.push("/orders")}
+              className="p-0.5 hover:opacity-70 transition-opacity"
+            >
               <ScrollText className="w-6 h-6 text-[#1e293b]" />
             </button>
             <button

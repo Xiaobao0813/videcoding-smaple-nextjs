@@ -12,12 +12,23 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface Order {
+  id: string;
+  orderNumber: string;
+  items: CartItem[];
+  totalPrice: number;
+  createdAt: Date;
+}
+
 interface CartContextType {
   items: CartItem[];
+  orders: Order[];
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  saveOrder: (orderNumber: string) => void;
+  reorder: (orderId: string) => void;
   totalItems: number;
   totalPrice: number;
 }
@@ -68,6 +79,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
   ]);
 
+  const [orders, setOrders] = useState<Order[]>([]);
+
   const addItem = (item: CartItem) => {
     setItems((currentItems) => {
       const existingItem = currentItems.find((i) => i.id === item.id);
@@ -85,19 +98,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(id);
-      return;
-    }
     setItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === id ? { ...item, quantity } : item,
+        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
       ),
     );
   };
 
   const clearCart = () => {
-    setItems([]);
+    // Reset all quantities to 0 instead of removing items
+    setItems((currentItems) =>
+      currentItems.map((item) => ({ ...item, quantity: 0 })),
+    );
+  };
+
+  const saveOrder = (orderNumber: string) => {
+    const newOrder: Order = {
+      id: Date.now().toString(),
+      orderNumber,
+      items: [...items],
+      totalPrice,
+      createdAt: new Date(),
+    };
+    setOrders((prevOrders) => [newOrder, ...prevOrders]);
+  };
+
+  const reorder = (orderId: string) => {
+    const order = orders.find((o) => o.id === orderId);
+    if (order) {
+      // Clear current cart and add all items from the order
+      setItems([...order.items]);
+    }
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -110,10 +141,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        orders,
         addItem,
         removeItem,
         updateQuantity,
         clearCart,
+        saveOrder,
+        reorder,
         totalItems,
         totalPrice,
       }}

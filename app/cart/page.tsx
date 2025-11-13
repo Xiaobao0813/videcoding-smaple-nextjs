@@ -87,7 +87,10 @@ export default function CartPage() {
 
       {/* Footer with Checkout Button */}
       <footer className="border-t border-gray-200 bg-[#fefefe] backdrop-blur-sm px-4 py-8 max-w-md mx-auto w-full">
-        <button className="w-full bg-[#ed9c2a] text-white font-bold text-base py-3 px-6 rounded-full hover:bg-[#d88a24] transition-colors">
+        <button
+          onClick={() => router.push("/checkout")}
+          className="w-full bg-[#ed9c2a] text-white font-bold text-base py-3 px-6 rounded-full hover:bg-[#d88a24] transition-colors"
+        >
           Checkout
         </button>
       </footer>
