@@ -3,7 +3,7 @@
 import { useCart } from "@/lib/cart-context";
 import { ScrollText, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Product {
   id: string;
@@ -18,7 +18,7 @@ interface HomeClientProps {
   products: Product[];
 }
 
-export default function HomeClient({ products }: HomeClientProps) {
+export default function HomeClient({ products: initialProducts }: HomeClientProps) {
   const router = useRouter();
   const {
     items: cartItems,
@@ -28,6 +28,28 @@ export default function HomeClient({ products }: HomeClientProps) {
     totalPrice,
   } = useCart();
   const [activeCategory, setActiveCategory] = useState("popular");
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch products when category changes
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/products?category=${activeCategory}`);
+        if (response.ok) {
+          const data = await response.json();
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [activeCategory]);
 
   // Get quantity for a product from cart
   const getItemQuantity = (productId: string) => {
@@ -135,8 +157,17 @@ export default function HomeClient({ products }: HomeClientProps) {
 
         {/* Menu Items */}
         <main className="flex-1 flex flex-col gap-6">
-          <div className="flex flex-col gap-6">
-            {products.map((product) => {
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-[#666666]">Loading products...</div>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-[#666666]">No products available</div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {products.map((product) => {
               const quantity = getItemQuantity(product.id);
               return (
                 <article
@@ -189,7 +220,8 @@ export default function HomeClient({ products }: HomeClientProps) {
                 </article>
               );
             })}
-          </div>
+            </div>
+          )}
 
           {/* Total */}
           <div className="bg-[#f8f3ec] p-4 rounded-3xl">
