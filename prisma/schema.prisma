@@ -11,8 +11,6 @@ generator client {
 }
 
 datasource db {
-  // Supported: "postgresql" | "sqlserver"
-  // Change this value to switch database providers
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
