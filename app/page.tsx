@@ -91,11 +91,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#fefefe] flex flex-col">
-      <div className="flex-1 flex flex-col gap-8 px-4 pt-8 pb-6 max-w-md mx-auto w-full">
+      <div className="flex-1 flex flex-col gap-8 px-4 pt-8 pb-6 w-full max-w-7xl mx-auto">
         {/* Header */}
         <header className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-[#333333]">
-            飲料點單系統
+            阿寶早餐點單系統
           </h1>
           <div className="flex items-center gap-4">
             <button
@@ -144,33 +144,33 @@ export default function Home() {
         </nav>
 
         {/* Drinks List */}
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {mockDrinks.map((product) => {
             const quantity = getItemQuantity(product.id);
             return (
               <article
                 key={product.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-50 p-4"
+                className="bg-white rounded-2xl shadow-lg border border-gray-50 p-4 transition-all duration-300 hover:scale-105 hover:shadow-xl"
               >
-                <div className="flex gap-4">
+                <div className="flex flex-col gap-4">
                   {/* Product Image */}
                   <div
-                    className="w-24 h-24 rounded-xl bg-cover bg-center shrink-0"
+                    className="w-full h-48 rounded-xl bg-cover bg-center"
                     style={{ backgroundImage: `url('${product.image}')` }}
                   />
 
                   {/* Product Info */}
-                  <div className="flex-1 flex flex-col gap-1">
+                  <div className="flex flex-col gap-2">
                     <h3 className="text-lg font-semibold text-[#333333]">
                       {product.name}
                     </h3>
-                    <p className="text-sm text-[#666666] leading-5">
+                    <p className="text-sm text-[#666666] leading-5 line-clamp-2">
                       {product.description}
                     </p>
 
                     {/* Price and Quantity Control */}
-                    <div className="flex items-center justify-between mt-3 pt-2">
-                      <span className="text-lg font-bold text-[#333333]">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                      <span className="text-xl font-bold text-[#333333]">
                         ${product.price.toFixed(2)}
                       </span>
                       <div className="flex items-center gap-2">
@@ -200,15 +200,15 @@ export default function Home() {
               </article>
             );
           })}
+        </div>
 
-          {/* Total Section */}
-          <div className="bg-[#f8f3ec] rounded-3xl p-4 mt-4">
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold text-[#333333]">總計</span>
-              <span className="text-base font-bold text-[#333333]">
-                ${totalPrice.toFixed(2)}
-              </span>
-            </div>
+        {/* Total Section */}
+        <div className="bg-[#f8f3ec] rounded-3xl p-4 lg:max-w-xs lg:ml-auto">
+          <div className="flex items-center justify-between">
+            <span className="text-base font-bold text-[#333333]">總計</span>
+            <span className="text-base font-bold text-[#333333]">
+              ${totalPrice.toFixed(2)}
+            </span>
           </div>
         </div>
       </div>

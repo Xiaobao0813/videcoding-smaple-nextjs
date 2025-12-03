@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/lib/cart-context";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function CartPage() {
@@ -16,10 +16,11 @@ export default function CartPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-8 max-w-md mx-auto w-full">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="返回首頁"
         >
-          <ChevronLeft className="w-6 h-6 text-[#333333]" />
+          <ArrowLeft className="w-6 h-6 text-[#333333]" />
         </button>
         <h1 className="text-xl font-bold text-[#333333]">Your Order</h1>
         <div className="w-10 h-10" /> {/* Spacer for centering */}
@@ -98,16 +99,16 @@ export default function CartPage() {
             {/* Order Summary */}
             <div className="bg-[#f8f3ec] p-4 rounded-2xl">
               <div className="flex items-center justify-between py-1">
-                <span className="text-sm text-[#666666]">Subtotal</span>
+                <span className="text-sm text-[#666666]">小計</span>
                 <span className="text-sm text-[#666666]">
                   ${subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-sm text-[#666666]">
-                  Estimated Preparation Time
+                  預計準備時間
                 </span>
-                <span className="text-sm text-[#666666]">15-20 min</span>
+                <span className="text-sm text-[#666666]">15-20 分鐘</span>
               </div>
             </div>
           </>
@@ -121,7 +122,7 @@ export default function CartPage() {
             onClick={() => router.push("/checkout")}
             className="w-full bg-[#ed9c2a] text-white font-bold text-base py-3 px-6 rounded-full hover:bg-[#d88a24] transition-colors"
           >
-            Checkout
+            結帳
           </button>
         </footer>
       )}
